@@ -28,6 +28,34 @@ document.addEventListener('pointerdown', event => {
   if (!nav.contains(event.target) && !menu.contains(event.target)) closeMenu();
 });
 window.matchMedia('(max-width: 620px)').addEventListener('change', () => closeMenu());
-const dialog=document.querySelector('dialog');dialog.setAttribute('aria-labelledby','dialog-title');function show(title,body){document.querySelector('#dialog-title').textContent=title;document.querySelector('#dialog-body').innerHTML=body;dialog.showModal()}document.querySelector('.close').onclick=()=>dialog.close();dialog.addEventListener('click',e=>{if(e.target===dialog){const b=dialog.getBoundingClientRect();if(e.clientX<b.left||e.clientX>b.right||e.clientY<b.top||e.clientY>b.bottom)dialog.close()}});document.querySelectorAll('[data-join]').forEach(b=>b.onclick=()=>show('Your community connection','<p>The community invitation link is coming soon. Membership registration is not available on this website yet.</p><p>You can still explore every student support checklist and our FAQs.</p><button class="btn" id="explore-dialog">Explore student support ↓</button>'));dialog.addEventListener('click',e=>{if(e.target.id==='explore-dialog'){dialog.close();document.querySelector('#support').scrollIntoView()}});const topics={applications:['University applications',['Make a shortlist of universities and courses that interest you.','Check official course pages for qualifications, English requirements and deadlines.','List the documents requested for each application.','Keep copies of your submissions and monitor your email for updates.']],courses:['Course selection',['Compare modules, assessment methods and course length.','Check the teaching location and available start dates.','Compare tuition fees and realistic living costs.','Think about how the course supports your interests and career plans.']],accommodation:['Accommodation',['Compare university housing with private accommodation.','Check the total cost, deposit, contract length and commute.','Verify the provider and view the property or an appropriate virtual tour.','Read the contract carefully before paying or signing.']],life:['Student life',['Explore your university’s orientation and student support services.','Create a realistic weekly budget for food, transport and essentials.','Try a society, campus event or local activity that interests you.','Ask university support staff for help when you need it.']],careers:['Career preparation',['Create a clear CV that reflects your actual experience.','Visit your university’s careers service for tailored support.','Practise explaining your skills with specific examples.','Check your permission to work before accepting a role.']]};document.querySelectorAll('[data-topic]').forEach(a=>a.onclick=e=>{e.preventDefault();const [title,items]=topics[a.dataset.topic];show(title,'<p>A starting checklist for your next step.</p><ul>'+items.map(t=>'<li>'+t+'</li>').join('')+'</ul><p>These are general starting points. Confirm requirements with the relevant university or provider.</p>')});
+const dialog=document.querySelector('dialog');dialog.setAttribute('aria-labelledby','dialog-title');function show(title,body){document.querySelector('#dialog-title').textContent=title;document.querySelector('#dialog-body').innerHTML=body;if(!dialog.open)dialog.showModal()}document.querySelector('.close').onclick=()=>dialog.close();dialog.addEventListener('click',e=>{if(e.target===dialog){const b=dialog.getBoundingClientRect();if(e.clientX<b.left||e.clientX>b.right||e.clientY<b.top||e.clientY>b.bottom)dialog.close()}});document.querySelectorAll('[data-join]').forEach(b=>b.onclick=()=>show('Your community connection','<p>The community invitation link is coming soon. Membership registration is not available on this website yet.</p><p>You can still explore every student support checklist and our FAQs.</p><button class="btn" id="explore-dialog">Explore student support ↓</button>'));dialog.addEventListener('click',e=>{if(e.target.id==='explore-dialog'){dialog.close();document.querySelector('#support').scrollIntoView()}});const topics={applications:['University applications',['Make a shortlist of universities and courses that interest you.','Check official course pages for qualifications, English requirements and deadlines.','List the documents requested for each application.','Keep copies of your submissions and monitor your email for updates.']],courses:['Course selection',['Compare modules, assessment methods and course length.','Check the teaching location and available start dates.','Compare tuition fees and realistic living costs.','Think about how the course supports your interests and career plans.']],accommodation:['Accommodation',['Compare university housing with private accommodation.','Check the total cost, deposit, contract length and commute.','Verify the provider and view the property or an appropriate virtual tour.','Read the contract carefully before paying or signing.']],life:['Student life',['Explore your university’s orientation and student support services.','Create a realistic weekly budget for food, transport and essentials.','Try a society, campus event or local activity that interests you.','Ask university support staff for help when you need it.']],careers:['Career preparation',['Create a clear CV that reflects your actual experience.','Visit your university’s careers service for tailored support.','Practise explaining your skills with specific examples.','Check your permission to work before accepting a role.']]};const topicRoutes = new Map();
+document.querySelectorAll('[data-topic]').forEach(link => {
+  topicRoutes.set(link.hash, link.dataset.topic);
+  link.addEventListener('click', event => {
+    event.preventDefault();
+    if (location.hash === link.hash) syncTopicRoute();
+    else location.hash = link.hash;
+  });
+});
+let activeTopic = null;
+function syncTopicRoute() {
+  const key = topicRoutes.get(location.hash);
+  if (key && topics[key]) {
+    activeTopic = key;
+    const [title, items] = topics[key];
+    show(title, '<p>A starting checklist for your next step.</p><ul>' + items.map(item => '<li>' + item + '</li>').join('') + '</ul><p>These are general starting points. Confirm requirements with the relevant university or provider.</p>');
+  } else if (activeTopic) {
+    activeTopic = null;
+    if (dialog.open) dialog.close();
+  }
+}
+dialog.addEventListener('close', () => {
+  if (activeTopic && topicRoutes.get(location.hash) === activeTopic) {
+    history.replaceState(null, '', location.pathname + location.search + '#support');
+  }
+  activeTopic = null;
+});
+window.addEventListener('hashchange', syncTopicRoute);
+syncTopicRoute();
 </script></body></html>
 
